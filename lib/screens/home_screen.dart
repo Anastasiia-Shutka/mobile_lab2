@@ -12,6 +12,73 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isOpen = false;
 
+  final List<String> _parcels = [
+    'Parcel #001 - In Hub',
+    'Parcel #002 - Delivery',
+    'Parcel #003 - Arrived',
+  ];
+
+  final _controller = TextEditingController();
+
+  void _addParcel() {
+    _controller.clear();
+    // ДОДАНО <void> ТУТ:
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('New Parcel'),
+        content: TextField(
+          controller: _controller,
+          decoration: const InputDecoration(hintText: 'Enter name'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_controller.text.trim().isNotEmpty) {
+                setState(() => _parcels.add(_controller.text.trim()));
+                _controller.clear();
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editParcel(int index) {
+    _controller.text = _parcels[index];
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Parcel'),
+        content: TextField(controller: _controller, autofocus: true),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_controller.text.trim().isNotEmpty) {
+                setState(() => _parcels[index] = _controller.text.trim());
+                _controller.clear();
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isWide = MediaQuery.of(context).size.width > 600;
@@ -22,56 +89,58 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Smart Post'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.add_circle_outline, size: 28),
+            onPressed: _addParcel,
+            tooltip: 'Add New Parcel',
+          ),
+          IconButton(
             icon: const Icon(Icons.person),
             onPressed: () => Navigator.pushNamed(context, '/profile'),
-          )
+          ),
         ],
       ),
-
       body: isWide
           ? Row(
-              crossAxisAlignment: CrossAxisAlignment.start, 
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: _list()),
-                const VerticalDivider(width: 1), 
-                SizedBox(
-                  width: 350,
-                  child: _iot(),
-                ),
+                const VerticalDivider(width: 1),
+                SizedBox(width: 350, child: _iot()),
               ],
             )
           : Column(
               children: [
                 Expanded(child: _list()),
-                _iot(), 
+                _iot(),
               ],
             ),
     );
   }
 
   Widget _list() {
-    return ListView(
+    return ListView.builder(
       padding: const EdgeInsets.all(10),
-      children: [
-        const ParcelCard('Parcel #001 - In Hub'),
-        const ParcelCard('Parcel #002 - Delivery'),
-        const ParcelCard('Parcel #003 - Arrived'),
-      ],
+      itemCount: _parcels.length,
+      itemBuilder: (context, index) {
+        return ParcelCard(
+          _parcels[index],
+          onTap: () => _editParcel(index),
+          onDelete: () => setState(() => _parcels.removeAt(index)),
+        );
+      },
     );
   }
 
   Widget _iot() {
     return Container(
-      height: 220, 
+      height: 220,
       width: double.infinity,
       margin: const EdgeInsets.all(15),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: _isOpen ? Colors.green[50] : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          const BoxShadow(color: Colors.black12, blurRadius: 10),
-        ],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -95,5 +164,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }
