@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_project/data/repositories/local_auth_repository.dart';
+import 'package:my_project/data/repositories/secure_auth_repository.dart';
 import 'package:my_project/logic/auth_provider.dart';
 import 'package:my_project/screens/home_screen.dart';
 import 'package:my_project/screens/login_screen.dart';
@@ -12,7 +12,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(LocalAuthRepository()),
+          create: (_) => AuthProvider(SecureAuthRepository()),
         ),
       ],
       child: const MyApp(),
@@ -29,11 +29,11 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: authProvider.isLoading 
+      home: authProvider.isLoading
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : (authProvider.currentUser == null 
-              ? const LoginScreen() 
-              : const HomeScreen()),
+          : (authProvider.currentUser == null
+                ? const LoginScreen()
+                : const HomeScreen()),
       routes: {
         '/reg': (c) => const RegisterScreen(),
         '/home': (c) => const HomeScreen(),
