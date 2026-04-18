@@ -32,4 +32,14 @@ class SecureAuthRepository implements AuthRepository {
   Future<void> clearData() async {
     await _storage.delete(key: _sessionKey);
   }
+
+  @override
+  Future<void> saveData(String key, String value) async {
+    await _storage.write(key: key, value: value);
+  }
+
+  @override
+  Future<String?> getData(String key) async {
+    return await _storage.read(key: key);
+  }
 }

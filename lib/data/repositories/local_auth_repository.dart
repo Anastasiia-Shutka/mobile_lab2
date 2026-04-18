@@ -34,4 +34,16 @@ class LocalAuthRepository implements AuthRepository {
     await prefs.remove(_userKey);
     await prefs.setBool(_sessionKey, false);
   }
+  
+  @override
+  Future<void> saveData(String key, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, value);
+  }
+
+  @override
+  Future<String?> getData(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
+  }
 }
