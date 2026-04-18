@@ -1,19 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import 'package:my_project/domain/models/user.dart';
 import 'package:my_project/logic/auth_provider.dart';
 import 'package:my_project/widgets/app_btn.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
+
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        title: const Text('Profile'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const CircleAvatar(
+              radius: 45,
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.person, size: 45, color: Colors.white),
+            ),
+            const SizedBox(height: 10),
+
+            Text(
+              user?.name ?? 'Guest User',
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            Text(
+              user?.email ?? 'No email found',
+              style: const TextStyle(color: Colors.grey),
+            ),
+
+            const SizedBox(height: 25),
+
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                children: [
+                  _item(Icons.edit, 'Edit Profile', () {
+                    if (user != null) {
+                      _showEditDialog(context, user);
+                    }
+                  }),
+                  const Divider(height: 1),
+                  _item(Icons.notifications_none, 'Notifications', () {}),
+                  const Divider(height: 1),
+                  _item(Icons.help_outline, 'Help & Support', () {}),
+                  const Divider(height: 1),
+                  _item(Icons.security, 'Privacy Policy', () {}),
+                ],
+              ),
+            ),
+
+            const Spacer(),
+
+            AppBtn('Logout', () {
+              showDialog<void>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Confirm Logout'),
+                  content: const Text('Are you sure you want to log out?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        authProvider.logout();
+                        Navigator.pushReplacementNamed(context, '/');
+                      },
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }, c: Colors.red[400]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _item(IconData i, String t, VoidCallback onTap) => ListTile(
+    leading: Icon(i, color: Colors.blue),
+    title: Text(t),
+    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+    onTap: onTap,
+  );
 
   void _showEditDialog(BuildContext context, User user) {
     final nameController = TextEditingController(text: user.name);
     final emailController = TextEditingController(text: user.email);
     final passController = TextEditingController(text: user.password);
 
-    showDialog<void>( 
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Edit Profile'),
@@ -46,13 +141,13 @@ class ProfileScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              if (nameController.text.isNotEmpty 
-              && emailController.text.isNotEmpty) {
+              if (nameController.text.isNotEmpty &&
+                  emailController.text.isNotEmpty) {
                 context.read<AuthProvider>().updateUser(
-                      newName: nameController.text.trim(),
-                      newEmail: emailController.text.trim(),
-                      newPassword: passController.text.trim(),
-                    );
+                  newName: nameController.text.trim(),
+                  newEmail: emailController.text.trim(),
+                  newPassword: passController.text.trim(),
+                );
                 Navigator.pop(ctx);
               }
             },
@@ -62,85 +157,4 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final user = authProvider.currentUser;
-
-    return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-        title: const Text('Profile'),
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const CircleAvatar(
-              radius: 45,
-              backgroundColor: Colors.blue,
-              child: Icon(Icons.person, size: 45, color: Colors.white),
-            ),
-            const SizedBox(height: 10),
- 
-            Text(
-              user?.name ?? 'Guest User',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-   
-            Text(
-              user?.email ?? 'No email found',
-              style: const TextStyle(color: Colors.grey),
-            ),
-            
-            const SizedBox(height: 25),
-
-            Card(
-              shape: 
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              child: Column(
-                children: [
-                  _item(
-                    Icons.edit,
-                    'Edit Profile',
-                    () {
-                      if (user != null) {
-                        _showEditDialog(context, user);
-                      }
-                    },
-                  ),
-                  const Divider(height: 1),
-                  _item(Icons.notifications_none, 'Notifications', () {}),
-                  const Divider(height: 1),
-                  _item(Icons.help_outline, 'Help & Support', () {}),
-                  const Divider(height: 1),
-                  _item(Icons.security, 'Privacy Policy', () {}),
-                ],
-              ),
-            ),
-
-            const Spacer(),
-            AppBtn(
-              'Logout',
-              () {
-                authProvider.logout(); 
-                Navigator.pushReplacementNamed(context, '/');
-              },
-              c: Colors.red[400],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _item(IconData i, String t, VoidCallback onTap) => ListTile(
-        leading: Icon(i, color: Colors.blue),
-        title: Text(t),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: onTap,
-      );
 }

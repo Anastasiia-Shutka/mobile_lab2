@@ -4,4 +4,5 @@ abstract class AuthRepository {
   Future<void> saveUser(User user);
   Future<User?> getUser();
   Future<void> clearData();
+  Future<bool> hasSession();
 }

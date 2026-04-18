@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:my_project/logic/auth_provider.dart';
 import 'package:my_project/widgets/app_btn.dart';
 import 'package:my_project/widgets/parcel_card.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,9 +22,59 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final _controller = TextEditingController();
 
+  @override
+  Widget build(BuildContext context) {
+    final bool isWide = MediaQuery.of(context).size.width > 600;
+    final auth = context.watch<AuthProvider>();
+
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        title: Text(auth.isOnline ? 'Smart Post' : 'Smart Post (Offline)'),
+        backgroundColor: auth.isOnline ? Colors.blue : Colors.orange,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, size: 28),
+            onPressed: _addParcel,
+            tooltip: 'Add New Parcel',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _showLogoutDialog,
+            tooltip: 'Logout',
+          ),
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () => Navigator.pushNamed(context, '/profile'),
+          ),
+        ],
+      ),
+      body: isWide
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _list()),
+                const VerticalDivider(width: 1),
+                SizedBox(width: 350, child: _iot(auth)),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(child: _list()),
+                _iot(auth),
+              ],
+            ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _addParcel() {
     _controller.clear();
-    // ДОДАНО <void> ТУТ:
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -79,61 +131,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final bool isWide = MediaQuery.of(context).size.width > 600;
-
-    return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-        title: const Text('Smart Post'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline, size: 28),
-            onPressed: _addParcel,
-            tooltip: 'Add New Parcel',
-          ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => Navigator.pushNamed(context, '/profile'),
-          ),
-        ],
-      ),
-      body: isWide
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _list()),
-                const VerticalDivider(width: 1),
-                SizedBox(width: 350, child: _iot()),
-              ],
-            )
-          : Column(
-              children: [
-                Expanded(child: _list()),
-                _iot(),
-              ],
-            ),
-    );
-  }
-
-  Widget _list() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(10),
-      itemCount: _parcels.length,
-      itemBuilder: (context, index) {
-        return ParcelCard(
-          _parcels[index],
-          onTap: () => _editParcel(index),
-          onDelete: () => setState(() => _parcels.removeAt(index)),
-        );
-      },
-    );
-  }
-
-  Widget _iot() {
+  Widget _iot(AuthProvider auth) {
     return Container(
-      height: 220,
+      height: 250,
       width: double.infinity,
       margin: const EdgeInsets.all(15),
       padding: const EdgeInsets.all(20),
@@ -145,6 +145,15 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Text(
+            'Box Temp: ${auth.boxTemp}°C',
+            style: TextStyle(
+              color: Colors.blue[800],
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 15),
           Icon(
             _isOpen ? Icons.lock_open : Icons.lock,
             size: 50,
@@ -166,9 +175,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Widget _list() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(10),
+      itemCount: _parcels.length,
+      itemBuilder: (context, index) {
+        return ParcelCard(
+          _parcels[index],
+          onTap: () => _editParcel(index),
+          onDelete: () => setState(() => _parcels.removeAt(index)),
+        );
+      },
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<AuthProvider>().logout();
+              Navigator.pop(ctx);
+            },
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 }

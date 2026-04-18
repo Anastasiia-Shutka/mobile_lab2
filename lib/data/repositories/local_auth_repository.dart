@@ -5,11 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalAuthRepository implements AuthRepository {
   static const String _userKey = 'registered_user';
+  static const String _sessionKey = 'is_logged_in';
 
   @override
   Future<void> saveUser(User user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, jsonEncode(user.toJson()));
+    await prefs.setBool(_sessionKey, true);
   }
 
   @override
@@ -21,8 +23,15 @@ class LocalAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<bool> hasSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_sessionKey) ?? false;
+  }
+
+  @override
   Future<void> clearData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
+    await prefs.setBool(_sessionKey, false);
   }
 }
