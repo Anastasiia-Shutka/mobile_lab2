@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_project/data/repositories/secure_auth_repository.dart';
-import 'package:my_project/logic/auth_provider.dart';
+import 'package:my_project/logic/app_cubit.dart';
+import 'package:my_project/logic/app_state.dart';
 import 'package:my_project/screens/home_screen.dart';
 import 'package:my_project/screens/login_screen.dart';
 import 'package:my_project/screens/profile_screen.dart';
 import 'package:my_project/screens/register_screen.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(SecureAuthRepository()),
-        ),
-      ],
-      child: const MyApp(),
+    RepositoryProvider(
+      create: (context) => SecureAuthRepository(),
+      child: BlocProvider(
+        create: (context) => AppCubit(context.read<SecureAuthRepository>()),
+        child: const MyApp(),
+      ),
     ),
   );
 }
@@ -25,19 +25,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: authProvider.isLoading
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : (authProvider.currentUser == null
-                ? const LoginScreen()
-                : const HomeScreen()),
-      routes: {
-        '/reg': (c) => const RegisterScreen(),
-        '/home': (c) => const HomeScreen(),
-        '/profile': (c) => const ProfileScreen(),
+    return BlocBuilder<AppCubit, AppState>(
+      builder: (context, state) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: state.isLoading
+              ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+              : (state.user == null
+                  ? const LoginScreen()
+                  : const HomeScreen()),
+          routes: {
+            '/reg': (c) => const RegisterScreen(),
+            '/home': (c) => const HomeScreen(),
+            '/profile': (c) => const ProfileScreen(),
+          },
+        );
       },
     );
   }

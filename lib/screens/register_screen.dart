@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_project/logic/auth_provider.dart';
+import 'package:my_project/logic/app_cubit.dart';
 import 'package:my_project/widgets/app_btn.dart';
 import 'package:my_project/widgets/app_input.dart';
 import 'package:provider/provider.dart';
@@ -82,7 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
-      final success = await context.read<AuthProvider>().register(
+      final success = await context.read<AppCubit>().register(
         _nameController.text,
         _emailController.text,
         _passController.text,
