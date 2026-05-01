@@ -1,5 +1,7 @@
+import 'dart:io'; // ДОДАНО: для перевірки платформи (iOS/Android)
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_flashlight/my_flashlight.dart'; 
 import 'package:my_project/logic/app_cubit.dart';
 import 'package:my_project/logic/app_state.dart';
 import 'package:my_project/screens/login_screen.dart';
@@ -8,6 +10,26 @@ import 'package:my_project/widgets/parcel_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  void _toggleSecretFlashlight(BuildContext context) {
+    if (Platform.isIOS) {
+      showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Увага'),
+          content: const Text('This secret feature (flashlight) is not supported on iOS.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('ОК'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      MyFlashlight.onLight();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +41,10 @@ class HomeScreen extends StatelessWidget {
             title: Text(state.isOnline ? 'Smart Post' : 'Smart Post (Offline)'),
             backgroundColor: state.isOnline ? Colors.blue : Colors.orange,
             actions: [
+              IconButton(
+                icon: const Icon(Icons.flashlight_on),
+                onPressed: () => _toggleSecretFlashlight(context),
+              ),
               IconButton(
                 icon: const Icon(Icons.refresh),
                 onPressed: () => context.read<AppCubit>().getParcels(),

@@ -38,6 +38,10 @@ dependencies:
   flutter_secure_storage: ^10.0.0
   flutter_bloc: ^9.1.1
 
+  my_flashlight:
+    git:
+      url: https://github.com/Anastasiia-Shutka/my_plugin.git
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

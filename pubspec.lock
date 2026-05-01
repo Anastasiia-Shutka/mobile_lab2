@@ -312,6 +312,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.11.10"
+  my_flashlight:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "291d5be01c6b7aa80a6c87d5bfd48b4968fe5bac"
+      url: "https://github.com/Anastasiia-Shutka/my_plugin.git"
+    source: git
+    version: "0.0.1"
   native_toolchain_c:
     dependency: transitive
     description:
